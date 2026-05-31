@@ -1,8 +1,7 @@
-import React from 'react';
 import { CacheItem } from '../types';
 import { CategoryKey } from '../types';
-import { CategoryCard } from './CategoryCard';
-import { CacheItemCard } from './CacheItemCard';
+import { CategoryCard } from '../components/category_card.comp';
+import { CacheItemCard } from '../components/cache_item_card.comp';
 import { formatBytes } from '../utils/format';
 
 interface DashboardProps {

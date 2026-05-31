@@ -1,4 +1,3 @@
-import React from 'react';
 import { CategoryKey } from '../types';
 import { formatBytes, getCategoryColor } from '../utils/format';
 
