@@ -1,10 +1,10 @@
 import React from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { Header } from './components/header_comp';
+import { Header } from './components/header.comp';
 import { WelcomeScreen } from './screens/welcome.screen';
 import { LoadingScreen } from './screens/loading.screen';
 import { Dashboard } from './screens/dashboard.screen';
-import { useScanner } from './hooks/useScanner';
+import { useScanner } from './hooks/use_scanner.hook';
 import { CategoryKey } from './types';
 
 export default function App() {
