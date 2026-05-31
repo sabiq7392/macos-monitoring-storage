@@ -99,17 +99,22 @@ app.whenReady().then(() => {
   createTrayWindow();
 
   // Zero-dependency Live Reload (Hot Reload) for Frontend files
+  // Debounce helper to avoid rapid consecutive reloads
+  const debounce = (fn, delay) => {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
+  };
+
   const frontendFiles = ['index.html', 'style.css', 'renderer.js'];
   frontendFiles.forEach(file => {
     try {
-      watch(path.join(__dirname, file), () => {
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.reloadIgnoringCache();
-        }
-        if (trayWindow && !trayWindow.isDestroyed()) {
-          trayWindow.webContents.reloadIgnoringCache();
-        }
-      });
+      watch(path.join(__dirname, file), debounce(() => {
+        // Broadcast a lightweight hot-reload event instead of full reload
+        broadcastIPC('hot-reload');
+      }, 300));
     } catch (err) {
       console.error(`Gagal memantau file ${file}:`, err);
     }
