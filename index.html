@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real-time Cache & Junk Monitor</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="logo-area">
+      <div class="logo-pulse"></div>
+      <span class="logo-text">JUNK-DETECTOR</span>
+    </div>
+    <div class="status-badge">
+      <span class="pulse-green"></span>
+      <span class="badge-text">Monitoring Real-time Aktif</span>
+    </div>
+  </header>
+
+  <main class="dashboard">
+    <!-- Top Stats -->
+    <section class="overview-section">
+      <div class="glass-card main-stat-card">
+        <div class="card-bg-gradient"></div>
+        <div class="stat-content">
+          <p class="stat-label">TOTAL CACHE TERDETEKSI</p>
+          <h1 id="total-size">0.00 B</h1>
+          <p class="stat-desc">Dapat segera dibersihkan untuk melegakan penyimpanan sistem Anda</p>
+        </div>
+      </div>
+
+      <div class="overview-grid">
+        <div class="glass-card mini-card" id="card-node">
+          <h3>Node.js & npm</h3>
+          <p class="mini-value" id="node-size">0.00 B</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="node-progress" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="glass-card mini-card" id="card-python">
+          <h3>Python</h3>
+          <p class="mini-value" id="python-size">0.00 B</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar purple" id="python-progress" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="glass-card mini-card" id="card-macos">
+          <h3>Developer/macOS</h3>
+          <p class="mini-value" id="macos-size">0.00 B</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar blue" id="macos-progress" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="glass-card mini-card" id="card-editor">
+          <h3>Editor Caches</h3>
+          <p class="mini-value" id="editor-size">0.00 B</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="editor-progress" style="width: 0%; background: #fb923c; box-shadow: 0 0 8px rgba(251, 146, 60, 0.4);"></div>
+          </div>
+        </div>
+        <div class="glass-card mini-card" id="card-ai">
+          <h3>AI Caches</h3>
+          <p class="mini-value" id="ai-size">0.00 B</p>
+          <div class="progress-bar-container">
+            <div class="progress-bar" id="ai-progress" style="width: 0%; background: #ec4899; box-shadow: 0 0 8px rgba(236, 72, 153, 0.4);"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Cache List -->
+    <section class="list-section">
+      <div class="section-header">
+        <h2>Detail Folder Cache</h2>
+        <span id="scan-time" class="scan-time-text">Terakhir diperbarui: Sedang memindai...</span>
+      </div>
+
+      <div class="glass-card list-card">
+        <div id="loading-spinner" class="spinner-container">
+          <div class="spinner"></div>
+          <p>Memindai file sampah...</p>
+        </div>
+        <div id="empty-state" class="empty-state hidden">
+          <div class="success-icon">✓</div>
+          <h3>Sistem Anda Bersih!</h3>
+          <p>Tidak ada cache atau file sampah Node.js/Python yang terdeteksi.</p>
+        </div>
+        <ul id="cache-list" class="cache-list-items">
+          <!-- Items will be generated dynamically -->
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

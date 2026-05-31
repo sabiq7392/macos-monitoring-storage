@@ -1,0 +1,26 @@
+{
+  "name": "junk-detector",
+  "version": "1.0.0",
+  "description": "Deteksi file cache Node.js, npm, dan Python di sistem.",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "start": "electron ."
+  },
+  "bin": {
+    "junk-detector": "./index.js"
+  },
+  "keywords": [
+    "cache",
+    "detector",
+    "nodejs",
+    "npm",
+    "python",
+    "junk"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^31.0.0"
+  }
+}
