@@ -1,4 +1,3 @@
-import React from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { Header } from './components/header.comp';
 import { WelcomeScreen } from './screens/welcome.screen';
@@ -21,6 +20,7 @@ export default function App() {
   const handleStartScan = async () => {
     navigate('/scanning');
     await scan();
+    navigate('/dashboard');
   };
 
   // Derived stats used by Dashboard
