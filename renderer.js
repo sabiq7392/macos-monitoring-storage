@@ -55,6 +55,25 @@ async function scan() {
   if (isScanning) return;
   isScanning = true;
 
+  const loadingBar = document.getElementById('loading-bar-fill');
+  const loadingTitle = document.getElementById('loading-title');
+  const statusTextEl = document.querySelector('.loading-status-text');
+  
+  const statusTexts = [
+    'Mencari berkas cache Node.js & npm...',
+    'Menyisir dependensi python virtualenv...',
+    'Memindai riwayat chat AI (Claude & Antigravity)...',
+    'Menemukan log & cache penyunting teks VS Code & Cursor...',
+    'Menganalisis folder Developer & sampah sistem macOS...',
+    'Menghitung kapasitas ruang yang bisa dilegakan...'
+  ];
+
+  // Reset progress
+  let progress = 0;
+  if (loadingBar) loadingBar.style.width = '0%';
+  if (loadingTitle) loadingTitle.textContent = 'Sedang Menyisir Penyimpanan... (0%)';
+  if (statusTextEl) statusTextEl.textContent = statusTexts[0];
+
   // Show loading state and clear old data for a fresh start
   if (loadingScreenEl) loadingScreenEl.classList.remove('hidden');
   if (overviewSection) overviewSection.classList.add('hidden');
@@ -63,11 +82,39 @@ async function scan() {
   if (cacheListEl) cacheListEl.innerHTML = '';
   if (loadingPathEl) loadingPathEl.textContent = 'Menghubungkan ke scanner...';
 
+  let statusTextIndex = 1;
+  const progressInterval = setInterval(() => {
+    if (progress < 96) {
+      progress += Math.floor(Math.random() * 4) + 2; // Increments of 2-5
+      if (progress > 96) progress = 96;
+      
+      if (loadingBar) loadingBar.style.width = `${progress}%`;
+      if (loadingTitle) loadingTitle.textContent = `Sedang Menyisir Penyimpanan... (${progress}%)`;
+      
+      // Rotate status messages smoothly
+      if (statusTextEl && progress % 16 === 0) {
+        statusTextEl.textContent = statusTexts[statusTextIndex % statusTexts.length];
+        statusTextIndex++;
+      }
+    }
+  }, 120);
+
   try {
     const data = await window.electronAPI.scanCaches();
     cachedItems = data;
+    
+    // Complete progress
+    clearInterval(progressInterval);
+    if (loadingBar) loadingBar.style.width = '100%';
+    if (loadingTitle) loadingTitle.textContent = 'Sedang Menyisir Penyimpanan... (100%)';
+    if (statusTextEl) statusTextEl.textContent = 'Pemindaian selesai!';
+    
+    // Tiny delay so the user feels the 100% completion glow
+    await new Promise(resolve => setTimeout(resolve, 250));
+    
     updateUI();
   } catch (error) {
+    clearInterval(progressInterval);
     console.error('Scan failed:', error);
   } finally {
     isScanning = false;

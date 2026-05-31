@@ -447,17 +447,10 @@ body::-webkit-scrollbar-thumb:hover {
   max-width: 70%;
 }
 
-.item-title-col {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-}
-
-.item-badges-row {
+.item-title-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .item-name {
@@ -678,10 +671,9 @@ body::-webkit-scrollbar-thumb:hover {
 
 .loading-bar-fill {
   height: 100%;
-  width: 30%;
   background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
   border-radius: 2px;
-  animation: slide-bar 2s infinite ease-in-out;
+  transition: width 0.15s ease-out;
 }
 
 @keyframes slide-bar {

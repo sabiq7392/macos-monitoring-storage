@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,10 @@
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
   <!-- Header Bar -->
   <header class="app-header">
@@ -31,12 +34,12 @@
           <div class="glowing-spinner"></div>
         </div>
         <div class="loading-text-wrapper">
-          <h3>Sedang Menyisir Penyimpanan...</h3>
+          <h3 id="loading-title">Sedang Menyisir Penyimpanan...</h3>
           <p class="loading-status-text">Mempersiapkan pemindaian cache...</p>
         </div>
       </div>
       <div class="loading-bar-track">
-        <div class="loading-bar-fill"></div>
+        <div id="loading-bar-fill" class="loading-bar-fill" style="width: 0%"></div>
       </div>
       <div id="loading-path" class="loading-path-text">Menghubungkan ke system files...</div>
     </div>
@@ -49,7 +52,9 @@
           <span class="logo-arrow">↻</span>
         </div>
         <h1>Siap membersihkan Mac Anda, bro?</h1>
-        <p>Junk-Detector akan menyisir seluruh komputer Anda untuk memantau semua file cache & hidden files raksasa milik <strong>Node.js, npm, Python, Code Editors (VS Code, Cursor)</strong>, serta log obrolan <strong>AI Caches (Claude & Antigravity)</strong>.</p>
+        <p>Junk-Detector akan menyisir seluruh komputer Anda untuk memantau semua file cache & hidden files raksasa
+          milik <strong>Node.js, npm, Python, Code Editors (VS Code, Cursor)</strong>, serta log obrolan <strong>AI
+            Caches (Claude & Antigravity)</strong>.</p>
         <button id="start-scan-btn" class="glowing-btn primary large-btn">
           <span>Mulai Pindai Sekarang</span>
         </button>
@@ -93,14 +98,16 @@
           <h3>Editor Caches</h3>
           <p class="mini-value" id="editor-size">0.00 B</p>
           <div class="progress-bar-container">
-            <div class="progress-bar" id="editor-progress" style="width: 0%; background: #fb923c; box-shadow: 0 0 8px rgba(251, 146, 60, 0.4);"></div>
+            <div class="progress-bar" id="editor-progress"
+              style="width: 0%; background: #fb923c; box-shadow: 0 0 8px rgba(251, 146, 60, 0.4);"></div>
           </div>
         </div>
         <div class="glass-card mini-card" id="card-ai">
           <h3>AI Caches</h3>
           <p class="mini-value" id="ai-size">0.00 B</p>
           <div class="progress-bar-container">
-            <div class="progress-bar" id="ai-progress" style="width: 0%; background: #ec4899; box-shadow: 0 0 8px rgba(236, 72, 153, 0.4);"></div>
+            <div class="progress-bar" id="ai-progress"
+              style="width: 0%; background: #ec4899; box-shadow: 0 0 8px rgba(236, 72, 153, 0.4);"></div>
           </div>
         </div>
       </div>
@@ -115,21 +122,6 @@
             <span class="refresh-icon-spin">↻</span> Pindai Ulang
           </button>
           <span id="scan-time" class="scan-time-text">Terakhir diperbarui: Sedang memindai...</span>
-        </div>
-      </div>
-
-      <!-- Stacked Storage Progress Bar (macOS Style) -->
-      <div class="storage-progress-container">
-        <div class="storage-progress-labels">
-          <span class="progress-title">Komposisi Sampah Cache</span>
-          <span id="stacked-percentage" class="progress-val">0% Terisi</span>
-        </div>
-        <div class="storage-stacked-bar">
-          <div class="storage-bar node" id="bar-node" style="width: 0%" title="Node.js & npm"></div>
-          <div class="storage-bar python" id="bar-python" style="width: 0%" title="Python"></div>
-          <div class="storage-bar macos" id="bar-macos" style="width: 0%" title="Developer/macOS"></div>
-          <div class="storage-bar editor" id="bar-editor" style="width: 0%" title="Editor Caches"></div>
-          <div class="storage-bar ai" id="bar-ai" style="width: 0%" title="AI Caches"></div>
         </div>
       </div>
 
@@ -148,4 +140,5 @@
 
   <script src="renderer.js"></script>
 </body>
+
 </html>
