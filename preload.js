@@ -2,5 +2,6 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   scanCaches: () => ipcRenderer.invoke('scan-caches'),
-  cleanCache: (cacheData) => ipcRenderer.invoke('clean-cache', cacheData)
+  cleanCache: (cacheData) => ipcRenderer.invoke('clean-cache', cacheData),
+  onScanProgress: (callback) => ipcRenderer.on('scan-progress', (event, data) => callback(data))
 });

@@ -214,6 +214,9 @@ async function getPathSize(targetPath) {
 
 async function scanLocalCaches(dir, foundCaches = [], startDir = dir) {
   try {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('scan-progress', { path: dir });
+    }
     const files = await fs.readdir(dir, { withFileTypes: true });
     for (const file of files) {
       const fullPath = path.join(dir, file.name);
@@ -264,9 +267,9 @@ async function scanLocalCaches(dir, foundCaches = [], startDir = dir) {
           cleanupCmd: `rm -rf "${fullPath}"`
         });
       } else if (file.isDirectory()) {
-        // Increase depth to 6 to find deeply nested developer projects
+        // Increase depth to 10 to find deeply nested developer projects relative to startDir
         const depth = fullPath.split(path.sep).length - startDir.split(path.sep).length;
-        if (depth <= 6) {
+        if (depth <= 10) {
           await scanLocalCaches(fullPath, foundCaches, startDir);
         }
       }

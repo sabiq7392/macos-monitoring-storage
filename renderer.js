@@ -29,6 +29,7 @@ const cacheListEl = document.getElementById('cache-list');
 const spinnerEl = document.getElementById('loading-spinner');
 const emptyStateEl = document.getElementById('empty-state');
 const scanTimeEl = document.getElementById('scan-time');
+const loadingPathEl = document.getElementById('loading-path');
 
 // Initial loading state
 let isScanning = false;
@@ -218,3 +219,10 @@ scan();
 
 // Real-time polling/monitoring interval (setiap 5 detik)
 setInterval(scan, 5000);
+
+// Listen to real-time scanning progress updates from main process
+window.electronAPI.onScanProgress((data) => {
+  if (loadingPathEl) {
+    loadingPathEl.textContent = `Sedang membaca: ${data.path}`;
+  }
+});

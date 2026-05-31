@@ -457,6 +457,17 @@ body {
   color: var(--text-secondary);
 }
 
+.loading-path-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  max-width: 90%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-sans);
+  opacity: 0.85;
+}
+
 .spinner {
   width: 40px;
   height: 40px;
