@@ -271,25 +271,28 @@ body::-webkit-scrollbar-thumb:hover {
 .overview-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 24px;
 }
 
 .mini-card h3 {
-  font-size: 0.85rem;
+  font-size: 0.65rem;
   font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: 8px;
 }
 
 .mini-value {
-  font-size: 1.6rem;
+  font-size: 1rem;
   font-weight: 700;
   margin-bottom: 12px;
 }
 
 .mini-card {
   cursor: pointer;
+  padding: 12px;
+  border-radius: 8px;
+  background: var(--bg-card);
 }
 
 #card-node.active {
@@ -894,17 +897,19 @@ body::-webkit-scrollbar-thumb:hover {
 
   .overview-section {
     width: 35%;
-    /* Sisi kiri tepat 35% */
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    padding-right: 12px;
+    padding: 16px 12px;
+    gap: 12px;
+    box-sizing: border-box;
   }
 
   .main-stat-card {
-    padding: 24px;
-    /* Kurangi padding agar pas */
+    padding: 20px;
+    margin-bottom: 12px;
+    align-items: stretch;
     justify-content: flex-start;
   }
 
