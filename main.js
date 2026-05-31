@@ -2,7 +2,6 @@ import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
-import { watch } from 'fs';
 import os from 'os';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -11,6 +10,9 @@ const execAsync = promisify(exec);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const isDev = process.env.NODE_ENV === 'development';
+const VITE_DEV_URL = 'http://localhost:5173';
 
 let mainWindow;
 let trayWindow;
@@ -36,7 +38,12 @@ function createMainWindow() {
     }
   });
 
-  mainWindow.loadFile('index.html');
+  if (isDev) {
+    mainWindow.loadURL(VITE_DEV_URL);
+    mainWindow.webContents.openDevTools();
+  } else {
+    mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
+  }
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -59,7 +66,11 @@ function createTrayWindow() {
     }
   });
 
-  trayWindow.loadFile('index.html');
+  if (isDev) {
+    trayWindow.loadURL(VITE_DEV_URL);
+  } else {
+    trayWindow.loadFile(path.join(__dirname, 'dist/index.html'));
+  }
 
   // Hide the window when it loses focus (acting exactly like a dropdown panel)
   trayWindow.on('blur', () => {
@@ -98,27 +109,8 @@ app.whenReady().then(() => {
   createMainWindow();
   createTrayWindow();
 
-  // Zero-dependency Live Reload (Hot Reload) for Frontend files
-  // Debounce helper to avoid rapid consecutive reloads
-  const debounce = (fn, delay) => {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn(...args), delay);
-    };
-  };
-
-  const frontendFiles = ['index.html', 'style.css', 'renderer.js'];
-  frontendFiles.forEach(file => {
-    try {
-      watch(path.join(__dirname, file), debounce(() => {
-        // Broadcast a lightweight hot‑reload event with changed file name
-        broadcastIPC('hot-reload', { file });
-      }, 300));
-    } catch (err) {
-      console.error(`Gagal memantau file ${file}:`, err);
-    }
-  });
+  // Hot-reload is now handled by Vite HMR in development mode.
+  // No manual file watcher needed.
 
   // Create system tray icon next to clock (macOS Menu Bar)
   try {
