@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { CacheItem } from '../types';
 import { formatBytes, truncatePath, getCategoryColor, categoryClass } from '../utils/format';
 
