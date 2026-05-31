@@ -249,7 +249,7 @@ body::-webkit-scrollbar-thumb:hover {
 /* Grid layout */
 .overview-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
   margin-bottom: 24px;
 }
@@ -552,7 +552,7 @@ body::-webkit-scrollbar-thumb:hover {
 
 /* PREMIUM LOADING SCREEN */
 .loading-screen {
-  flex-shrink: 0;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -560,12 +560,12 @@ body::-webkit-scrollbar-thumb:hover {
   padding: 32px 24px;
   text-align: center;
   gap: 16px;
-  margin-bottom: 20px;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(20, 10, 40, 0.5) 100%);
   border: 1px solid rgba(6, 182, 212, 0.2);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   position: relative;
   overflow: hidden;
+  border-radius: 16px;
 }
 
 .loading-bg-gradient {
