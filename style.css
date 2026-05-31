@@ -107,8 +107,18 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 @keyframes logo-glow {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 16px var(--accent-cyan); }
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+    box-shadow: 0 0 16px var(--accent-cyan);
+  }
 }
 
 .status-badge {
@@ -138,9 +148,20 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 @keyframes pulse-animation {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
 }
 
 /* Glass Cards styling */
@@ -330,6 +351,7 @@ body::-webkit-scrollbar-thumb:hover {
   gap: 16px;
   flex: 1;
   overflow: hidden;
+  /* kembalikan ke hidden agar .list-card saja yang scroll */
   min-height: 0;
 }
 
@@ -425,14 +447,21 @@ body::-webkit-scrollbar-thumb:hover {
   max-width: 70%;
 }
 
-.item-title-row {
+.item-title-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.item-badges-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .item-name {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
 }
 
@@ -491,7 +520,7 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 .item-size {
-  font-size: 1.05rem;
+  font-size: 0.9rem;
   font-weight: 700;
 }
 
@@ -502,7 +531,7 @@ body::-webkit-scrollbar-thumb:hover {
   font-family: var(--font-sans);
   font-size: 0.8rem;
   font-weight: 700;
-  padding: 8px 16px;
+  padding: 4px 8px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -547,7 +576,9 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* PREMIUM LOADING SCREEN */
@@ -580,8 +611,15 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 @keyframes pulse-bg {
-  0% { transform: scale(1); opacity: 0.5; }
-  100% { transform: scale(1.1); opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
 }
 
 .loading-content-wrapper {
@@ -647,9 +685,17 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 @keyframes slide-bar {
-  0% { transform: translateX(-100%); }
-  50% { width: 40%; }
-  100% { transform: translateX(350%); }
+  0% {
+    transform: translateX(-100%);
+  }
+
+  50% {
+    width: 40%;
+  }
+
+  100% {
+    transform: translateX(350%);
+  }
 }
 
 .empty-state {
@@ -739,7 +785,9 @@ body::-webkit-scrollbar-thumb:hover {
 }
 
 @keyframes logo-spin-slow {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .welcome-content h1 {
@@ -763,4 +811,138 @@ body::-webkit-scrollbar-thumb:hover {
   font-size: 1.05rem !important;
   border-radius: 14px !important;
   margin-top: 12px;
+}
+
+/* =========================================
+   RESPONSIVE LAYOUT (DESKTOP SIDE-BY-SIDE)
+   ========================================= */
+@media (min-width: 800px) {
+  .dashboard {
+    flex-direction: row;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  /* -------------------------------------------------
+   CACHE LIST ITEM ENHANCEMENTS
+   ------------------------------------------------- */
+  .item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    /* allow it to take remaining space */
+    max-width: 100%;
+  }
+
+  .item-path {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-sans);
+    opacity: 0.85;
+    max-width: 100%;
+    cursor: help;
+  }
+
+  /* Tooltip using data-fullpath attribute */
+  .item-path[data-fullpath] {
+    position: relative;
+  }
+
+  .item-path[data-fullpath]::after {
+    content: attr(data-fullpath);
+    position: absolute;
+    left: 0;
+    bottom: 120%;
+    background: rgba(0, 0, 0, 0.85);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 10;
+  }
+
+  .item-path[data-fullpath]:hover::after {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Ensure list card scrolls and fills remaining space */
+  .list-card {
+    padding: 8px 0;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+  }
+
+  /* Responsive tweaks for very narrow screens */
+  @media (max-width: 600px) {
+    .dashboard {
+      flex-direction: column;
+    }
+
+    .overview-section {
+      flex: none;
+      width: 100%;
+      padding-right: 0;
+    }
+
+    .list-section {
+      flex: none;
+    }
+  }
+
+  .overview-section {
+    width: 35%;
+    /* Sisi kiri tepat 35% */
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-right: 12px;
+  }
+
+  .main-stat-card {
+    padding: 24px;
+    /* Kurangi padding agar pas */
+    justify-content: flex-start;
+  }
+
+  #total-size {
+    font-size: 2.8rem;
+    /* Disesuaikan agar sangat pas di 35% */
+  }
+
+  /* Custom scrollbar for overview section */
+  .overview-section::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .overview-section::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+  }
+
+  .overview-section::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-cyan);
+  }
+
+  .list-section {
+    flex: 1;
+    /* Sisi kanan mengambil sisa 65% secara dinamis */
+    min-width: 0;
+  }
+
+  /* Make the overview grid wrap nicely */
+  .overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

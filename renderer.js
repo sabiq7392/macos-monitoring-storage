@@ -11,6 +11,16 @@ function formatBytes(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
+// Helper: Truncate paths in the middle (e.g. /Users/foo/.../bar)
+function truncatePath(path, maxLength = 50) {
+  if (!path) return '';
+  if (path.length <= maxLength) return path;
+  const charsToShow = maxLength - 3;
+  const frontChars = Math.ceil(charsToShow / 2);
+  const backChars = Math.floor(charsToShow / 2);
+  return path.substring(0, frontChars) + '...' + path.substring(path.length - backChars);
+}
+
 // Elements
 const totalSizeEl = document.getElementById('total-size');
 const nodeSizeEl = document.getElementById('node-size');
@@ -165,16 +175,18 @@ function updateUI() {
 
     li.innerHTML = `
       <div class="item-info">
-        <div class="item-title-row">
+        <div class="item-title-col">
+          <div class="item-badges-row">
+            <span class="item-badge ${badgeClass}">${item.category}</span>
+            ${extraBadges}
+          </div>
           <span class="item-name">${item.name}</span>
-          <span class="item-badge ${badgeClass}">${item.category}</span>
-          ${extraBadges}
         </div>
-        <span class="item-path" title="${item.path}">${item.path}</span>
+        <span class="item-path" data-fullpath="${item.path}">${truncatePath(item.path, 50)}</span>
       </div>
       <div class="item-action-row">
         <span class="item-size">${formatBytes(item.size)}</span>
-        <button class="clean-btn" data-id="${item.id}">Bersihkan</button>
+        <button class="clean-btn" data-id="${item.id}" title="Bersihkan Cache">🗑️</button>
       </div>
     `;
 
@@ -186,8 +198,8 @@ function updateUI() {
       const btn = e.target;
       const originalText = btn.textContent;
       btn.disabled = true;
-      btn.textContent = 'Membersihkan...';
-      
+      btn.textContent = '⏳';
+
       const success = await window.electronAPI.cleanCache({ id: item.id, cleanupCmd: item.cleanupCmd });
       if (success) {
         // Trigger immediate scan

@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
+import { watch } from 'fs';
 import os from 'os';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -96,6 +97,23 @@ function toggleTrayWindow() {
 app.whenReady().then(() => {
   createMainWindow();
   createTrayWindow();
+
+  // Zero-dependency Live Reload (Hot Reload) for Frontend files
+  const frontendFiles = ['index.html', 'style.css', 'renderer.js'];
+  frontendFiles.forEach(file => {
+    try {
+      watch(path.join(__dirname, file), () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.reloadIgnoringCache();
+        }
+        if (trayWindow && !trayWindow.isDestroyed()) {
+          trayWindow.webContents.reloadIgnoringCache();
+        }
+      });
+    } catch (err) {
+      console.error(`Gagal memantau file ${file}:`, err);
+    }
+  });
 
   // Create system tray icon next to clock (macOS Menu Bar)
   try {
