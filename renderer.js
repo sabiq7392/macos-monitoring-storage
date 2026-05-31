@@ -26,7 +26,7 @@ const editorProgressEl = document.getElementById('editor-progress');
 const aiProgressEl = document.getElementById('ai-progress');
 
 const cacheListEl = document.getElementById('cache-list');
-const spinnerEl = document.getElementById('loading-spinner');
+const loadingScreenEl = document.getElementById('loading-screen');
 const emptyStateEl = document.getElementById('empty-state');
 const scanTimeEl = document.getElementById('scan-time');
 const loadingPathEl = document.getElementById('loading-path');
@@ -46,7 +46,9 @@ async function scan() {
   isScanning = true;
 
   // Show loading state and clear old data for a fresh start
-  if (spinnerEl) spinnerEl.classList.remove('hidden');
+  if (loadingScreenEl) loadingScreenEl.classList.remove('hidden');
+  if (overviewSection) overviewSection.classList.add('hidden');
+  if (listSection) listSection.classList.add('hidden');
   if (emptyStateEl) emptyStateEl.classList.add('hidden');
   if (cacheListEl) cacheListEl.innerHTML = '';
   if (loadingPathEl) loadingPathEl.textContent = 'Menghubungkan ke scanner...';
@@ -59,7 +61,9 @@ async function scan() {
     console.error('Scan failed:', error);
   } finally {
     isScanning = false;
-    if (spinnerEl) spinnerEl.classList.add('hidden');
+    if (loadingScreenEl) loadingScreenEl.classList.add('hidden');
+    if (overviewSection) overviewSection.classList.remove('hidden');
+    if (listSection) listSection.classList.remove('hidden');
   }
 }
 

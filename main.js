@@ -12,10 +12,38 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow;
+let trayWindow;
 let tray;
 
-function createWindow() {
+function createMainWindow() {
+  if (mainWindow) {
+    mainWindow.focus();
+    return;
+  }
+  
   mainWindow = new BrowserWindow({
+    width: 420,
+    height: 680,
+    show: true,
+    frame: true,
+    titleBarStyle: 'hiddenInset',
+    backgroundColor: '#0f172a',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+
+  mainWindow.loadFile('index.html');
+
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+}
+
+function createTrayWindow() {
+  trayWindow = new BrowserWindow({
     width: 420,
     height: 680,
     show: false,
@@ -30,19 +58,20 @@ function createWindow() {
     }
   });
 
-  mainWindow.loadFile('index.html');
+  trayWindow.loadFile('index.html');
 
   // Hide the window when it loses focus (acting exactly like a dropdown panel)
-  mainWindow.on('blur', () => {
-    if (!mainWindow.webContents.isDevToolsOpened()) {
-      mainWindow.hide();
+  trayWindow.on('blur', () => {
+    if (!trayWindow.webContents.isDevToolsOpened()) {
+      trayWindow.hide();
     }
   });
 }
 
-function positionWindow() {
+function positionTrayWindow() {
+  if (!tray || !trayWindow) return;
   const trayBounds = tray.getBounds();
-  const windowBounds = mainWindow.getBounds();
+  const windowBounds = trayWindow.getBounds();
 
   // Center window horizontally below tray icon
   const x = Math.round(trayBounds.x + (trayBounds.width / 2) - (windowBounds.width / 2));
@@ -50,21 +79,23 @@ function positionWindow() {
   // Position window vertically below tray icon
   const y = Math.round(trayBounds.y + trayBounds.height + 4);
 
-  mainWindow.setPosition(x, y, false);
+  trayWindow.setPosition(x, y, false);
 }
 
-function toggleWindow() {
-  if (mainWindow.isVisible()) {
-    mainWindow.hide();
+function toggleTrayWindow() {
+  if (!trayWindow) return;
+  if (trayWindow.isVisible()) {
+    trayWindow.hide();
   } else {
-    positionWindow();
-    mainWindow.show();
-    mainWindow.focus();
+    positionTrayWindow();
+    trayWindow.show();
+    trayWindow.focus();
   }
 }
 
 app.whenReady().then(() => {
-  createWindow();
+  createMainWindow();
+  createTrayWindow();
 
   // Create system tray icon next to clock (macOS Menu Bar)
   try {
@@ -73,17 +104,20 @@ app.whenReady().then(() => {
     
     // Left click toggles the CleanMyMac-style popup panel
     tray.on('click', () => {
-      toggleWindow();
+      toggleTrayWindow();
     });
 
     // Right click shows standard context menu (with Quit option)
     const contextMenu = Menu.buildFromTemplate([
-      { label: 'Tampilkan Aplikasi', click: () => { toggleWindow(); } },
+      { label: 'Buka Jendela Utama', click: () => { createMainWindow(); } },
+      { label: 'Tampilkan Panel Tray', click: () => { toggleTrayWindow(); } },
       { label: 'Pindai Ulang', click: () => { 
-          positionWindow();
-          mainWindow.show();
-          mainWindow.focus();
-          mainWindow.webContents.send('trigger-scan'); 
+          positionTrayWindow();
+          if (trayWindow) {
+            trayWindow.show();
+            trayWindow.focus();
+          }
+          broadcastIPC('trigger-scan');
         } 
       },
       { type: 'separator' },
@@ -100,9 +134,18 @@ app.whenReady().then(() => {
   }
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (!mainWindow) createMainWindow();
   });
 });
+
+// Helper to send IPC to all windows
+function broadcastIPC(channel, ...args) {
+  BrowserWindow.getAllWindows().forEach(win => {
+    if (win && !win.isDestroyed()) {
+      win.webContents.send(channel, ...args);
+    }
+  });
+}
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
@@ -282,7 +325,7 @@ async function getPathSize(targetPath) {
 async function scanLocalCaches(dir, foundCaches = [], startDir = dir) {
   try {
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('scan-progress', { path: dir, status: 'Memindai direktori' });
+      broadcastIPC('scan-progress', { path: dir, status: 'Memindai direktori' });
     }
     const files = await fs.readdir(dir, { withFileTypes: true });
     for (const file of files) {
@@ -379,7 +422,7 @@ ipcMain.handle('scan-caches', async () => {
   const locals = await scanLocalCaches(home);
   for (const local of locals) {
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('scan-progress', { path: local.path, status: 'Menghitung ukuran' });
+      broadcastIPC('scan-progress', { path: local.path, status: 'Menghitung ukuran' });
     }
     const size = await getPathSize(local.path);
     if (size > 0) {

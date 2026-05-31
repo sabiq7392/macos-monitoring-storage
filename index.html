@@ -23,6 +23,24 @@
   </header>
 
   <main class="dashboard">
+    <!-- Loading Screen (Visible only while scanning) -->
+    <div id="loading-screen" class="glass-card loading-screen hidden">
+      <div class="loading-bg-gradient"></div>
+      <div class="loading-content-wrapper">
+        <div class="loading-spinner-wrapper">
+          <div class="glowing-spinner"></div>
+        </div>
+        <div class="loading-text-wrapper">
+          <h3>Sedang Menyisir Penyimpanan...</h3>
+          <p class="loading-status-text">Mempersiapkan pemindaian cache...</p>
+        </div>
+      </div>
+      <div class="loading-bar-track">
+        <div class="loading-bar-fill"></div>
+      </div>
+      <div id="loading-path" class="loading-path-text">Menghubungkan ke system files...</div>
+    </div>
+
     <!-- Welcome Start Screen -->
     <div id="welcome-screen" class="welcome-screen glass-card">
       <div class="welcome-bg-gradient"></div>
@@ -101,11 +119,6 @@
       </div>
 
       <div class="glass-card list-card">
-        <div id="loading-spinner" class="spinner-container">
-          <div class="spinner"></div>
-          <p id="loading-text">Memindai file sampah...</p>
-          <p id="loading-path" class="loading-path-text"></p>
-        </div>
         <div id="empty-state" class="empty-state hidden">
           <div class="success-icon">✓</div>
           <h3>Sistem Anda Bersih!</h3>
