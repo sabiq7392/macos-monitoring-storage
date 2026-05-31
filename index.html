@@ -23,8 +23,23 @@
   </header>
 
   <main class="dashboard">
+    <!-- Welcome Start Screen -->
+    <div id="welcome-screen" class="welcome-screen glass-card">
+      <div class="welcome-bg-gradient"></div>
+      <div class="welcome-content">
+        <div class="welcome-logo-glowing">
+          <span class="logo-arrow">↻</span>
+        </div>
+        <h1>Siap membersihkan Mac Anda, bro?</h1>
+        <p>Junk-Detector akan menyisir seluruh komputer Anda untuk memantau semua file cache & hidden files raksasa milik <strong>Node.js, npm, Python, Code Editors (VS Code, Cursor)</strong>, serta log obrolan <strong>AI Caches (Claude & Antigravity)</strong>.</p>
+        <button id="start-scan-btn" class="glowing-btn primary large-btn">
+          <span>Mulai Pindai Sekarang</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Top Stats -->
-    <section class="overview-section">
+    <section class="overview-section hidden">
       <div class="glass-card main-stat-card">
         <div class="card-bg-gradient"></div>
         <div class="stat-content">
@@ -74,10 +89,15 @@
     </section>
 
     <!-- Cache List -->
-    <section class="list-section">
+    <section class="list-section hidden">
       <div class="section-header">
         <h2>Detail Folder Cache</h2>
-        <span id="scan-time" class="scan-time-text">Terakhir diperbarui: Sedang memindai...</span>
+        <div class="header-actions">
+          <button id="refresh-btn" class="refresh-btn-premium" title="Pindai Ulang">
+            <span class="refresh-icon-spin">↻</span> Pindai Ulang
+          </button>
+          <span id="scan-time" class="scan-time-text">Terakhir diperbarui: Sedang memindai...</span>
+        </div>
       </div>
 
       <div class="glass-card list-card">

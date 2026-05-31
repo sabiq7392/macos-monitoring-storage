@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
@@ -12,12 +12,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 let mainWindow;
+let tray;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 950,
-    height: 700,
-    titleBarStyle: 'hiddenInset',
+    width: 420,
+    height: 680,
+    show: false,
+    frame: false,
+    resizable: false,
+    alwaysOnTop: true,
     backgroundColor: '#0f172a',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -27,10 +31,73 @@ function createWindow() {
   });
 
   mainWindow.loadFile('index.html');
+
+  // Hide the window when it loses focus (acting exactly like a dropdown panel)
+  mainWindow.on('blur', () => {
+    if (!mainWindow.webContents.isDevToolsOpened()) {
+      mainWindow.hide();
+    }
+  });
+}
+
+function positionWindow() {
+  const trayBounds = tray.getBounds();
+  const windowBounds = mainWindow.getBounds();
+
+  // Center window horizontally below tray icon
+  const x = Math.round(trayBounds.x + (trayBounds.width / 2) - (windowBounds.width / 2));
+  
+  // Position window vertically below tray icon
+  const y = Math.round(trayBounds.y + trayBounds.height + 4);
+
+  mainWindow.setPosition(x, y, false);
+}
+
+function toggleWindow() {
+  if (mainWindow.isVisible()) {
+    mainWindow.hide();
+  } else {
+    positionWindow();
+    mainWindow.show();
+    mainWindow.focus();
+  }
 }
 
 app.whenReady().then(() => {
   createWindow();
+
+  // Create system tray icon next to clock (macOS Menu Bar)
+  try {
+    const icon = nativeImage.createFromNamedImage('NSFolder');
+    tray = new Tray(icon.resize({ width: 18, height: 18 }));
+    
+    // Left click toggles the CleanMyMac-style popup panel
+    tray.on('click', () => {
+      toggleWindow();
+    });
+
+    // Right click shows standard context menu (with Quit option)
+    const contextMenu = Menu.buildFromTemplate([
+      { label: 'Tampilkan Aplikasi', click: () => { toggleWindow(); } },
+      { label: 'Pindai Ulang', click: () => { 
+          positionWindow();
+          mainWindow.show();
+          mainWindow.focus();
+          mainWindow.webContents.send('trigger-scan'); 
+        } 
+      },
+      { type: 'separator' },
+      { label: 'Keluar', click: () => { app.quit(); } }
+    ]);
+
+    tray.on('right-click', () => {
+      tray.popUpContextMenu(contextMenu);
+    });
+
+    tray.setToolTip('Junk-Detector');
+  } catch (error) {
+    console.error('Gagal inisialisasi System Tray:', error);
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
@@ -215,7 +282,7 @@ async function getPathSize(targetPath) {
 async function scanLocalCaches(dir, foundCaches = [], startDir = dir) {
   try {
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('scan-progress', { path: dir });
+      mainWindow.webContents.send('scan-progress', { path: dir, status: 'Memindai direktori' });
     }
     const files = await fs.readdir(dir, { withFileTypes: true });
     for (const file of files) {
@@ -311,6 +378,9 @@ ipcMain.handle('scan-caches', async () => {
   // 2. Scan Local Project Caches (Scanning the entire user home directory recursively for all node_modules and .venv!)
   const locals = await scanLocalCaches(home);
   for (const local of locals) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('scan-progress', { path: local.path, status: 'Menghitung ukuran' });
+    }
     const size = await getPathSize(local.path);
     if (size > 0) {
       results.push({
@@ -321,6 +391,19 @@ ipcMain.handle('scan-caches', async () => {
         size,
         cleanupCmd: local.cleanupCmd
       });
+    }
+  }
+
+  // Update macOS Dock badge count
+  if (process.platform === 'darwin') {
+    try {
+      if (results.length > 0) {
+        app.dock.setBadge(`${results.length}`);
+      } else {
+        app.dock.setBadge('');
+      }
+    } catch (err) {
+      console.error('Gagal memperbarui Dock Badge:', err);
     }
   }
 

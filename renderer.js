@@ -30,6 +30,12 @@ const spinnerEl = document.getElementById('loading-spinner');
 const emptyStateEl = document.getElementById('empty-state');
 const scanTimeEl = document.getElementById('scan-time');
 const loadingPathEl = document.getElementById('loading-path');
+const refreshBtn = document.getElementById('refresh-btn');
+
+const startScanBtn = document.getElementById('start-scan-btn');
+const welcomeScreen = document.getElementById('welcome-screen');
+const overviewSection = document.querySelector('.overview-section');
+const listSection = document.querySelector('.list-section');
 
 // Initial loading state
 let isScanning = false;
@@ -39,6 +45,12 @@ async function scan() {
   if (isScanning) return;
   isScanning = true;
 
+  // Show loading state and clear old data for a fresh start
+  if (spinnerEl) spinnerEl.classList.remove('hidden');
+  if (emptyStateEl) emptyStateEl.classList.add('hidden');
+  if (cacheListEl) cacheListEl.innerHTML = '';
+  if (loadingPathEl) loadingPathEl.textContent = 'Menghubungkan ke scanner...';
+
   try {
     const data = await window.electronAPI.scanCaches();
     cachedItems = data;
@@ -47,7 +59,7 @@ async function scan() {
     console.error('Scan failed:', error);
   } finally {
     isScanning = false;
-    spinnerEl.classList.add('hidden');
+    if (spinnerEl) spinnerEl.classList.add('hidden');
   }
 }
 
@@ -214,15 +226,37 @@ filterCards.forEach(card => {
   }
 });
 
-// Run Initial Scan
-scan();
+// Start Scan Button Click Event (Landing Page to Main Dashboard transition)
+if (startScanBtn) {
+  startScanBtn.addEventListener('click', () => {
+    if (welcomeScreen) welcomeScreen.classList.add('hidden');
+    if (overviewSection) overviewSection.classList.remove('hidden');
+    if (listSection) listSection.classList.remove('hidden');
+    scan();
+  });
+}
 
-// Real-time polling/monitoring interval (setiap 5 detik)
-setInterval(scan, 5000);
+// Manual Refresh Button Click Event
+if (refreshBtn) {
+  refreshBtn.addEventListener('click', () => {
+    scan();
+  });
+}
+
+
 
 // Listen to real-time scanning progress updates from main process
 window.electronAPI.onScanProgress((data) => {
   if (loadingPathEl) {
-    loadingPathEl.textContent = `Sedang membaca: ${data.path}`;
+    const statusText = data.status ? `${data.status}: ` : 'Sedang membaca: ';
+    loadingPathEl.textContent = `${statusText}${data.path}`;
   }
+});
+
+// Listen to trigger-scan event from System Tray Menu Bar
+window.electronAPI.onTriggerScan(() => {
+  if (welcomeScreen) welcomeScreen.classList.add('hidden');
+  if (overviewSection) overviewSection.classList.remove('hidden');
+  if (listSection) listSection.classList.remove('hidden');
+  scan();
 });
