@@ -2,6 +2,20 @@
 let cachedItems = [];
 let activeCategoryFilter = 'all';
 
+// Load persisted state from localStorage if available
+function loadPersistedState() {
+  const saved = localStorage.getItem('junkDetectorState');
+  if (saved) {
+    try {
+      const { cachedItems: savedItems, activeCategoryFilter: savedFilter } = JSON.parse(saved);
+      cachedItems = savedItems;
+      activeCategoryFilter = savedFilter;
+    } catch (e) {
+      console.error('Failed to parse persisted state:', e);
+    }
+  }
+}
+loadPersistedState();
 // Helper: Format bytes nicely
 function formatBytes(bytes) {
   if (bytes === 0) return '0 B';
@@ -323,3 +337,14 @@ window.electronAPI.onTriggerScan(() => {
   if (listSection) listSection.classList.remove('hidden');
   scan();
 });
+window.electronAPI.onHotReload(() => {
+  console.log('Hot reload triggered');
+  // If we already have cached scan results, just update the UI without a full rescan
+  if (Array.isArray(cachedItems) && cachedItems.length > 0) {
+    updateUI();
+  } else {
+    // Fallback: perform a fresh scan
+    scan();
+  }
+});
+

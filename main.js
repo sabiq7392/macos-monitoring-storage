@@ -112,8 +112,8 @@ app.whenReady().then(() => {
   frontendFiles.forEach(file => {
     try {
       watch(path.join(__dirname, file), debounce(() => {
-        // Broadcast a lightweight hot-reload event instead of full reload
-        broadcastIPC('hot-reload');
+        // Broadcast a lightweight hot‑reload event with changed file name
+        broadcastIPC('hot-reload', { file });
       }, 300));
     } catch (err) {
       console.error(`Gagal memantau file ${file}:`, err);
