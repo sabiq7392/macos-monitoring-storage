@@ -30,7 +30,7 @@ export function CacheItemCard({ item, onCleaned }: Props) {
   const color = getCategoryColor(item.category);
 
   return (
-    <li className="flex items-center gap-4 px-5 py-4 border-b border-white/5 last:border-b-0 hover:bg-white/[0.02] transition-colors duration-150">
+    <li title={item.path} className="flex items-center gap-4 px-5 py-4 border-b border-white/5 last:border-b-0 hover:bg-white/[0.02] transition-colors duration-150">
       <div className="flex-1 min-w-0">
         <div className="flex flex-col gap-1 mb-1">
           <div className="flex items-center gap-1.5 flex-wrap">
