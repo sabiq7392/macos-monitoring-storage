@@ -408,9 +408,25 @@ async function scanLocalCaches(dir, foundCaches = [], startDir = dir) {
 // IPC Handlers
 ipcMain.handle('scan-caches', async () => {
   const results = [];
+  const skipDirs = [
+    '.git', 'Library', 'Applications', 'System', 'Pictures', 'Music', 'Movies',
+    '.npm', '.nvm', '.cargo', '.rustup', '.docker', '.vscode', '.cursor', 
+    'Public', 'Creative Cloud Files', 'Downloads', 'Applications (Parallels)'
+  ];
 
-  // 1. Scan Global Caches
-  for (const cache of globalCaches) {
+  // 1. Scan Global Caches (Phase 1: 0% to 20%)
+  for (let i = 0; i < globalCaches.length; i++) {
+    const cache = globalCaches[i];
+    const progress = Math.round((i / globalCaches.length) * 20);
+    
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      broadcastIPC('scan-progress', { 
+        path: cache.name, 
+        status: 'Memindai cache global', 
+        progress 
+      });
+    }
+
     let size = 0;
     let foundPath = null;
     for (const p of cache.paths) {
@@ -433,12 +449,44 @@ ipcMain.handle('scan-caches', async () => {
     }
   }
 
-  // 2. Scan Local Project Caches (Scanning the entire user home directory recursively for all node_modules and .venv!)
-  const locals = await scanLocalCaches(home);
-  for (const local of locals) {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      broadcastIPC('scan-progress', { path: local.path, status: 'Menghitung ukuran' });
+  // 2. Scan Local Project Caches (Phase 2: 20% to 70%)
+  const locals = [];
+  try {
+    const homeFiles = await fs.readdir(home, { withFileTypes: true });
+    const foldersToScan = homeFiles.filter(file => file.isDirectory() && !skipDirs.includes(file.name));
+
+    for (let i = 0; i < foldersToScan.length; i++) {
+      const folder = foldersToScan[i];
+      const fullPath = path.join(home, folder.name);
+      
+      const progress = Math.round(20 + (i / foldersToScan.length) * 50);
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        broadcastIPC('scan-progress', { 
+          path: fullPath, 
+          status: `Menyisir folder ${folder.name}`, 
+          progress 
+        });
+      }
+      
+      await scanLocalCaches(fullPath, locals, fullPath);
     }
+  } catch (err) {
+    console.error('Gagal membaca direktori Home:', err);
+  }
+
+  // 3. Calculate discovered cache sizes (Phase 3: 70% to 99%)
+  for (let i = 0; i < locals.length; i++) {
+    const local = locals[i];
+    const progress = Math.round(70 + (i / locals.length) * 29);
+    
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      broadcastIPC('scan-progress', { 
+        path: local.path, 
+        status: `Menghitung kapasitas (${i + 1}/${locals.length})`, 
+        progress 
+      });
+    }
+    
     const size = await getPathSize(local.path);
     if (size > 0) {
       results.push({

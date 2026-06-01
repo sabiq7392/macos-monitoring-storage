@@ -54,23 +54,14 @@ export function useScanner() {
       scanningPath: 'Menghubungkan ke system files...',
     }));
 
-    // Animate progress bar
-    intervalRef.current = setInterval(() => {
-      setState(prev => {
-        if (prev.progress >= 96) return prev;
-        const next = Math.min(prev.progress + Math.floor(Math.random() * 4) + 2, 96);
-        statusIdxRef.current++;
-        return {
-          ...prev,
-          progress: next,
-          statusText: STATUS_TEXTS[statusIdxRef.current % STATUS_TEXTS.length],
-        };
-      });
-    }, 120);
-
-    // Listen to real-time progress from main process
+    // Listen to real-time progress from main process (100% genuine progress!)
     window.electronAPI.onScanProgress((data: ScanProgressData) => {
-      setState(prev => ({ ...prev, scanningPath: `${data.status}: ${data.path}` }));
+      setState(prev => ({
+        ...prev,
+        statusText: data.status,
+        scanningPath: data.path,
+        progress: typeof data.progress === 'number' ? data.progress : prev.progress
+      }));
     });
 
     try {

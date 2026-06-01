@@ -5,7 +5,7 @@ interface Props {
 }
 
 export function LoadingScreen({ progress, statusText, scanningPath }: Props) {
-  const pct = Math.min(progress, 100);
+  const pct = Math.round(Math.min(progress, 100));
   return (
     <div className="relative flex flex-col items-center gap-6 p-10 my-8 mx-5 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden shadow-2xl">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(45,212,191,0.08),transparent_70%)] pointer-events-none" />

@@ -14,6 +14,7 @@ export type CategoryKey = CacheItem['category'] | 'all';
 export interface ScanProgressData {
   path: string;
   status: string;
+  progress?: number;
 }
 
 // Extend the Window type so TypeScript knows about electronAPI
