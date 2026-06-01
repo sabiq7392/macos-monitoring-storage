@@ -5,5 +5,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   cleanCache: (cacheData) => ipcRenderer.invoke('clean-cache', cacheData),
   onScanProgress: (callback) => ipcRenderer.on('scan-progress', (event, data) => callback(data)),
   onTriggerScan: (callback) => ipcRenderer.on('trigger-scan', () => callback()),
+  showContextMenu: (data) => ipcRenderer.send('show-context-menu', data),
 });
 

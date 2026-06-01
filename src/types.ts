@@ -26,6 +26,7 @@ declare global {
       onScanProgress: (cb: (data: ScanProgressData) => void) => void;
       onTriggerScan: (cb: () => void) => void;
       onHotReload: (cb: () => void) => void;
+      showContextMenu: (args: { path: string }) => void;
     };
   }
 }

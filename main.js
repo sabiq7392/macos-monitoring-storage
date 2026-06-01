@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, shell } from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
@@ -525,4 +525,17 @@ ipcMain.handle('clean-cache', async (event, { id, cleanupCmd }) => {
     console.error('Pembersihan gagal:', error);
     return { success: false, error: error.message };
   }
+});
+
+ipcMain.on('show-context-menu', (event, { path }) => {
+  const template = [
+    {
+      label: 'Tampilkan di Finder',
+      click: () => {
+        shell.showItemInFolder(path);
+      }
+    }
+  ];
+  const menu = Menu.buildFromTemplate(template);
+  menu.popup({ window: BrowserWindow.fromWebContents(event.sender) });
 });
