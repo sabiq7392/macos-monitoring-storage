@@ -25,6 +25,8 @@ export function getCategoryColor(category: CategoryKey): string {
     'Developer/macOS':'#60a5fa',
     'Editor':         '#fb923c',
     'AI':             '#f472b6',
+    'Leftover App':   '#fbbf24',
+    'Hidden File':    '#e879f9',
   };
   return map[category] ?? '#94a3b8';
 }

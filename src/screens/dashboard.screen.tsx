@@ -29,12 +29,14 @@ export function Dashboard({
     { key: 'Developer/macOS', label: 'Developer/macOS' },
     { key: 'Editor', label: 'Editor Caches' },
     { key: 'AI', label: 'AI Caches' },
+    { key: 'Leftover App', label: 'Leftover Apps' },
+    { key: 'Hidden File', label: 'Hidden Files' },
   ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 max-w-7xl mx-auto">
       {/* Left column – 5 cols */}
-      <div className="lg:col-span-5 flex flex-col gap-6">
+      <div className="md:col-span-5 flex flex-col gap-6">
         {/* Total stat card */}
         <div className="relative overflow-hidden p-6 rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] backdrop-blur-md shadow-xl">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_0%_0%,rgba(45,212,191,0.12),transparent_60%)] pointer-events-none" />
@@ -66,7 +68,7 @@ export function Dashboard({
       </div>
 
       {/* Right column – 7 cols */}
-      <div className="lg:col-span-7 flex flex-col">
+      <div className="md:col-span-7 flex flex-col">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <h2 className="text-lg font-bold text-white tracking-tight">Detail Folder Cache</h2>
           <div className="flex items-center gap-3">

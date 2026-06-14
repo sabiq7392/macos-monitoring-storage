@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { CacheItem, CategoryKey, ScanProgressData } from '../types';
+import { CacheItem, CategoryKey, ScanMode, ScanProgressData } from '../types';
 
 const STATUS_TEXTS = [
   'Mencari berkas cache Node.js & npm...',
@@ -18,6 +18,7 @@ export interface ScannerState {
   scanningPath: string;
   lastScanned: string | null;
   activeFilter: CategoryKey;
+  activeModes: ScanMode[];
 }
 
 export function useScanner() {
@@ -29,6 +30,7 @@ export function useScanner() {
     scanningPath: 'Menghubungkan ke system files...',
     lastScanned: null,
     activeFilter: 'all',
+    activeModes: [],
   });
 
   const statusIdxRef = useRef(0);
@@ -41,7 +43,7 @@ export function useScanner() {
     }));
   }, []);
 
-  const scan = useCallback(async () => {
+  const scan = useCallback(async (modes: ScanMode[] = ['developer']) => {
     if (state.isScanning) return;
 
     statusIdxRef.current = 0;
@@ -52,6 +54,7 @@ export function useScanner() {
       progress: 0,
       statusText: STATUS_TEXTS[0],
       scanningPath: 'Menghubungkan ke system files...',
+      activeModes: modes,
     }));
 
     // Listen to real-time progress from main process (100% genuine progress!)
@@ -65,7 +68,7 @@ export function useScanner() {
     });
 
     try {
-      const results = await window.electronAPI.scanCaches();
+      const results = await window.electronAPI.scanCaches(modes);
 
       if (intervalRef.current) clearInterval(intervalRef.current);
 

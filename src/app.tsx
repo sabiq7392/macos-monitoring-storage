@@ -4,22 +4,22 @@ import { WelcomeScreen } from './screens/welcome.screen';
 import { LoadingScreen } from './screens/loading.screen';
 import { Dashboard } from './screens/dashboard.screen';
 import { useScanner } from './hooks/use_scanner.hook';
-import { CategoryKey } from './types';
+import { CategoryKey, ScanMode } from './types';
 
 export default function App() {
   const { state, scan, setFilter, cleanItem } = useScanner();
   const navigate = useNavigate();
 
   // Helper: after a successful clean, rescan and navigate to dashboard
-  const handleCleaned = async () => {
-    await scan();
+  const handleCleaned = async (modes: ScanMode[] = ['developer']) => {
+    await scan(modes);
     navigate('/dashboard');
   };
 
   // Wrapper for start scan that also changes route
-  const handleStartScan = async () => {
+  const handleStartScan = async (modes: ScanMode[]) => {
     navigate('/scanning');
-    await scan();
+    await scan(modes);
     navigate('/dashboard');
   };
 
@@ -49,6 +49,7 @@ export default function App() {
                 progress={state.progress}
                 statusText={state.statusText}
                 scanningPath={state.scanningPath}
+                modes={state.activeModes}
               />
             }
           />
@@ -61,7 +62,7 @@ export default function App() {
                 bytesByCategory={bytesByCategory}
                 filteredItems={filteredItems}
                 setFilter={setFilter}
-                handleRescan={handleStartScan}
+                handleRescan={() => handleStartScan(state.activeModes.length > 0 ? state.activeModes : ['developer'])}
                 handleCleaned={handleCleaned}
               />
             }

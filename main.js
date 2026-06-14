@@ -406,7 +406,7 @@ async function scanLocalCaches(dir, foundCaches = [], startDir = dir) {
 }
 
 // IPC Handlers
-ipcMain.handle('scan-caches', async () => {
+ipcMain.handle('scan-caches', async (event, modes = ['developer']) => {
   const results = [];
   const skipDirs = [
     '.git', 'Library', 'Applications', 'System', 'Pictures', 'Music', 'Movies',
@@ -414,89 +414,208 @@ ipcMain.handle('scan-caches', async () => {
     'Public', 'Creative Cloud Files', 'Downloads', 'Applications (Parallels)'
   ];
 
-  // 1. Scan Global Caches (Phase 1: 0% to 20%)
-  for (let i = 0; i < globalCaches.length; i++) {
-    const cache = globalCaches[i];
-    const progress = Math.round((i / globalCaches.length) * 20);
-    
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      broadcastIPC('scan-progress', { 
-        path: cache.name, 
-        status: 'Memindai cache global', 
-        progress 
-      });
-    }
+  // ─── PHASE: Developer Cache ────────────────────────────────────────────────
+  if (modes.includes('developer')) {
+    // 1. Scan Global Caches (Phase 1: 0% to 20%)
+    for (let i = 0; i < globalCaches.length; i++) {
+      const cache = globalCaches[i];
+      const progress = Math.round((i / globalCaches.length) * 20);
+      
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        broadcastIPC('scan-progress', { 
+          path: cache.name, 
+          status: 'Memindai cache global', 
+          progress 
+        });
+      }
 
-    let size = 0;
-    let foundPath = null;
-    for (const p of cache.paths) {
-      const s = await getPathSize(p);
-      if (s > 0) {
-        size += s;
-        foundPath = p;
+      let size = 0;
+      let foundPath = null;
+      for (const p of cache.paths) {
+        const s = await getPathSize(p);
+        if (s > 0) {
+          size += s;
+          foundPath = p;
+        }
+      }
+
+      if (size > 0) {
+        results.push({
+          id: cache.id,
+          name: cache.name,
+          category: cache.category,
+          path: foundPath,
+          size,
+          cleanupCmd: cache.cleanupCmd
+        });
       }
     }
 
-    if (size > 0) {
-      results.push({
-        id: cache.id,
-        name: cache.name,
-        category: cache.category,
-        path: foundPath,
-        size,
-        cleanupCmd: cache.cleanupCmd
-      });
+    // 2. Scan Local Project Caches (Phase 2: 20% to 70%)
+    const locals = [];
+    try {
+      const homeFiles = await fs.readdir(home, { withFileTypes: true });
+      const foldersToScan = homeFiles.filter(file => file.isDirectory() && !skipDirs.includes(file.name));
+
+      for (let i = 0; i < foldersToScan.length; i++) {
+        const folder = foldersToScan[i];
+        const fullPath = path.join(home, folder.name);
+        
+        const progress = Math.round(20 + (i / foldersToScan.length) * 50);
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          broadcastIPC('scan-progress', { 
+            path: fullPath, 
+            status: `Menyisir folder ${folder.name}`, 
+            progress 
+          });
+        }
+        
+        await scanLocalCaches(fullPath, locals, fullPath);
+      }
+    } catch (err) {
+      console.error('Gagal membaca direktori Home:', err);
     }
-  }
 
-  // 2. Scan Local Project Caches (Phase 2: 20% to 70%)
-  const locals = [];
-  try {
-    const homeFiles = await fs.readdir(home, { withFileTypes: true });
-    const foldersToScan = homeFiles.filter(file => file.isDirectory() && !skipDirs.includes(file.name));
-
-    for (let i = 0; i < foldersToScan.length; i++) {
-      const folder = foldersToScan[i];
-      const fullPath = path.join(home, folder.name);
+    // 3. Calculate discovered cache sizes (Phase 3: 70% to 99%)
+    for (let i = 0; i < locals.length; i++) {
+      const local = locals[i];
+      const progress = Math.round(70 + (i / locals.length) * 29);
       
-      const progress = Math.round(20 + (i / foldersToScan.length) * 50);
       if (mainWindow && !mainWindow.isDestroyed()) {
         broadcastIPC('scan-progress', { 
-          path: fullPath, 
-          status: `Menyisir folder ${folder.name}`, 
+          path: local.path, 
+          status: `Menghitung kapasitas (${i + 1}/${locals.length})`, 
           progress 
         });
       }
       
-      await scanLocalCaches(fullPath, locals, fullPath);
+      const size = await getPathSize(local.path);
+      if (size > 0) {
+        results.push({
+          id: local.id,
+          name: local.name,
+          category: local.category,
+          path: local.path,
+          size,
+          cleanupCmd: local.cleanupCmd
+        });
+      }
     }
-  } catch (err) {
-    console.error('Gagal membaca direktori Home:', err);
   }
 
-  // 3. Calculate discovered cache sizes (Phase 3: 70% to 99%)
-  for (let i = 0; i < locals.length; i++) {
-    const local = locals[i];
-    const progress = Math.round(70 + (i / locals.length) * 29);
-    
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      broadcastIPC('scan-progress', { 
-        path: local.path, 
-        status: `Menghitung kapasitas (${i + 1}/${locals.length})`, 
-        progress 
-      });
+  // ─── PHASE: Leftover Apps ──────────────────────────────────────────────────
+  if (modes.includes('leftover')) {
+    broadcastIPC('scan-progress', {
+      path: path.join(home, 'Library'),
+      status: 'Mencari sisa aplikasi yang sudah di-uninstall...',
+      progress: 10
+    });
+
+    // Collect bundle IDs of installed apps from /Applications & ~/Applications
+    const getInstalledBundleIds = async () => {
+      const ids = new Set();
+      const appDirs = ['/Applications', path.join(home, 'Applications')];
+      for (const dir of appDirs) {
+        try {
+          const apps = await fs.readdir(dir);
+          for (const app of apps) {
+            if (app.endsWith('.app')) {
+              // Bundle ID is usually the folder name without .app, but we just use app name as heuristic
+              ids.add(app.replace(/\.app$/, '').toLowerCase());
+            }
+          }
+        } catch (_) {}
+      }
+      return ids;
+    };
+
+    const installedIds = await getInstalledBundleIds();
+
+    const leftoverDirs = [
+      { dir: path.join(home, 'Library/Application Support'), minSize: 1024 * 1024 },      // > 1 MB
+      { dir: path.join(home, 'Library/Preferences'), minSize: 0 },
+      { dir: path.join(home, 'Library/Containers'), minSize: 1024 * 1024 },               // > 1 MB
+      { dir: path.join(home, 'Library/Saved Application State'), minSize: 0 },
+      { dir: path.join(home, 'Library/Caches'), minSize: 1024 * 1024 * 5 },              // > 5 MB
+    ];
+
+    let leftoverProgress = 10;
+    const leftoverStep = 80 / leftoverDirs.length;
+
+    for (const { dir, minSize } of leftoverDirs) {
+      leftoverProgress += leftoverStep;
+      broadcastIPC('scan-progress', { path: dir, status: `Memeriksa ${path.basename(dir)}...`, progress: Math.round(leftoverProgress) });
+
+      try {
+        const entries = await fs.readdir(dir, { withFileTypes: true });
+        for (const entry of entries) {
+          const entryName = entry.name.replace(/\.plist$/, '').toLowerCase();
+          // Heuristic: if the entry name contains no part of an installed app name, flag as leftover
+          const isInstalled = [...installedIds].some(id => entryName.includes(id) || id.includes(entryName));
+          if (isInstalled) continue;
+
+          const fullPath = path.join(dir, entry.name);
+          const size = await getPathSize(fullPath);
+          if (size < minSize) continue;
+
+          results.push({
+            id: `leftover-${entry.name}-${Math.random().toString(36).substr(2, 5)}`,
+            name: `Leftover: ${entry.name}`,
+            category: 'Leftover App',
+            path: fullPath,
+            size,
+            cleanupCmd: `rm -rf "${fullPath}"`
+          });
+        }
+      } catch (_) {}
     }
-    
-    const size = await getPathSize(local.path);
-    if (size > 0) {
-      results.push({
-        id: local.id,
-        name: local.name,
-        category: local.category,
-        path: local.path,
-        size,
-        cleanupCmd: local.cleanupCmd
-      });
+  }
+
+  // ─── PHASE: Hidden Files ───────────────────────────────────────────────────
+  if (modes.includes('hidden')) {
+    broadcastIPC('scan-progress', {
+      path: home,
+      status: 'Mencari file & folder tersembunyi besar...',
+      progress: 5
+    });
+
+    // Known heavy hidden folders to always check
+    const knownHiddenHeavy = [
+      '.gradle', '.m2', '.android', '.cache', '.local', '.docker',
+      '.vagrant', '.minikube', '.kube', '.terraform', '.pulumi',
+      '.venv', '.pyenv', '.rbenv', '.nvm', '.cargo', '.rustup',
+      '.gem', '.bundle', '.nuget', '.dotnet'
+    ];
+
+    try {
+      const homeEntries = await fs.readdir(home, { withFileTypes: true });
+      const hiddenEntries = homeEntries.filter(e => e.name.startsWith('.') && e.isDirectory());
+
+      for (let i = 0; i < hiddenEntries.length; i++) {
+        const entry = hiddenEntries[i];
+        const fullPath = path.join(home, entry.name);
+        const progress = Math.round(5 + (i / hiddenEntries.length) * 90);
+
+        broadcastIPC('scan-progress', { path: fullPath, status: `Memeriksa ${entry.name}...`, progress });
+
+        // Only include if it's a known heavy folder OR size > 10 MB
+        const isKnown = knownHiddenHeavy.includes(entry.name);
+        const size = await getPathSize(fullPath);
+        const MIN_HIDDEN_SIZE = 10 * 1024 * 1024; // 10 MB
+
+        if (size > 0 && (isKnown || size >= MIN_HIDDEN_SIZE)) {
+          results.push({
+            id: `hidden-${entry.name}-${Math.random().toString(36).substr(2, 5)}`,
+            name: `Hidden: ${entry.name}`,
+            category: 'Hidden File',
+            path: fullPath,
+            size,
+            cleanupCmd: `rm -rf "${fullPath}"`
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Gagal scan hidden files:', err);
     }
   }
 
